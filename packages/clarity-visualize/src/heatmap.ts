@@ -14,6 +14,9 @@ export class HeatmapHelper {
     state: PlaybackState = null;
     layout: LayoutHelper = null;
 
+    avgFold: number = null;
+    addMarkers: boolean = false;
+
     constructor(state: PlaybackState, layout: LayoutHelper) {
         this.state = state;
         this.layout = layout;
@@ -26,6 +29,8 @@ export class HeatmapHelper {
         this.offscreenRing = null;
         this.gradientPixels = null;
         this.timeout = null;
+        this.avgFold = null;
+        this.addMarkers = false;
 
         // Reset resize observer
         if (this.observer) {
@@ -57,7 +62,10 @@ export class HeatmapHelper {
     }
 
     public scroll = (activity: ScrollMapInfo[], avgFold: number, addMarkers: boolean): void => {
-        this.scrollData = this.scrollData || activity;
+        this.scrollData = activity || this.scrollData;
+        this.avgFold = avgFold || this.avgFold;
+        this.addMarkers = addMarkers || this.addMarkers;
+
         let canvas = this.overlay();
         let context = canvas.getContext(Constant.Context);
         let doc = this.state.window.document;
@@ -82,8 +90,8 @@ export class HeatmapHelper {
                 // Fill with gradient
                 context.fillStyle = grd;
                 context.fillRect(0, 0, canvas.width, canvas.height);
-                if (addMarkers) {
-                    this.addInfoMarkers(context, this.scrollData, canvas.width, canvas.height, avgFold);
+                if (this.addMarkers) {
+                    this.addInfoMarkers(context, this.scrollData, canvas.width, canvas.height, this.avgFold);
                 }
             }
         };
@@ -242,7 +250,7 @@ export class HeatmapHelper {
         let localMax = 0;
         let height = this.state.window && this.state.window.document ? this.state.window.document.documentElement.clientHeight : 0;
         for (let element of this.data) {
-            let el = this.layout.get(element.hash) as HTMLElement;
+            let el = this.layout.get(element.hash, element.selector);
             if (el && typeof el.getBoundingClientRect === "function") {
                 let r = el.getBoundingClientRect();
                 let v = this.visible(el, r, height);
