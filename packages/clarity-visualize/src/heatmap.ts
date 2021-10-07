@@ -247,7 +247,7 @@ export class HeatmapHelper {
         let localMax = 0;
         let height = this.state.window && this.state.window.document ? this.state.window.document.documentElement.clientHeight : 0;
         for (let element of this.data) {
-            let el = this.layout.get(element.hash) as HTMLElement;
+            let el = this.layout.get(element.hash, element.selector);
             if (el && typeof el.getBoundingClientRect === "function") {
                 let r = el.getBoundingClientRect();
                 let v = this.visible(el, r, height);

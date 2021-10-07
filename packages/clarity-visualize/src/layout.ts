@@ -21,8 +21,12 @@ export class LayoutHelper {
         this.hashMap = {};
     }
 
-    public get = (hash) => {
-        var element = hash in this.hashMap ? (this.hashMap[hash].isConnected ? this.hashMap[hash] : null) : null;
+    public get = (hash: string, selector?: string): HTMLElement => {
+        let element = hash in this.hashMap ? (this.hashMap[hash].isConnected ? this.hashMap[hash] : null) : null;
+        if (element == null && selector) {
+            element = document.querySelector(selector);
+        }
+
         return element;
     }
 
