@@ -5,7 +5,7 @@ import config from "@src/core/config";
 import * as internal from "@src/diagnostic/internal";
 import * as extract from "@src/layout/extract";
 import * as region from "@src/layout/region";
-import selector from "@src/layout/selector";
+import { helper } from "@src/index";
 
 let index: number = 1;
 
@@ -273,7 +273,7 @@ function updateSelector(value: NodeValue): void {
     let d = value.data;
     let p = position(parent, value);
     let s: SelectorInput = { id: value.id, tag: d.tag, prefix, position: p, attributes: d.attributes };
-    value.selector = [selector(s), selector(s, true)];
+    value.selector = [helper.selector(s), helper.selector(s, true)];
 }
 
 export function getNode(id: number): Node {
