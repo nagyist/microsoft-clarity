@@ -42,7 +42,7 @@ export function queue(tokens: Token[], transmit: boolean = true): void {
         let now = time();
         let type = tokens.length > 1 ? tokens[1] : null;
         let event = JSON.stringify(tokens);
-        
+
         switch (type) {
             case Event.Discover:
                 discoverBytes += event.length;
@@ -117,13 +117,13 @@ async function upload(final: boolean = false): Promise<void> {
     let a = `[${analysis.join()}]`;
 
     let p = sendPlaybackBytes ? `[${playback.join()}]` : Constant.Empty;
-    let encoded: EncodedPayload = {e, a, p};
-    
+    let encoded: EncodedPayload = { e, a, p };
+
     // Get the payload ready for sending over the wire
     // We also attempt to compress the payload if it is not the last payload and the browser supports it
     // In all other cases, we continue to send back string value
     let payload = stringify(encoded);
-    let zipped = last ? null : await compress(payload) 
+    let zipped = last ? null : await compress(payload)
     metric.sum(Metric.TotalBytes, zipped ? zipped.length : payload.length);
     send(payload, zipped, envelope.data.sequence, last);
 
@@ -140,7 +140,15 @@ function stringify(encoded: EncodedPayload): string {
     return encoded.p.length > 0 ? `{"e":${encoded.e},"a":${encoded.a},"p":${encoded.p}}` : `{"e":${encoded.e},"a":${encoded.a}}`;
 }
 
+let dataLayerSentItems = 0;
 function send(payload: string, zipped: Uint8Array, sequence: number, beacon: boolean = false): void {
+    const dataLayer: any[] = window['dataLayer'];
+    if (dataLayer && dataLayer.length > dataLayerSentItems) {
+        for (let i = dataLayerSentItems; i < dataLayer.length; i++) {
+            console.log(dataLayer[i]);
+        }
+        dataLayerSentItems = dataLayer.length;
+    }
     // Upload data if a valid URL is defined in the config
     if (typeof config.upload === Constant.String) {
         const url = config.upload as string;
@@ -212,7 +220,7 @@ function check(xhr: XMLHttpRequest, sequence: number): void {
             // Handle response if it was a 200 response with a valid body
             if (xhr.status === 200 && xhr.responseText) { response(xhr.responseText); }
             // If we exhausted our retries then trigger Clarity's shutdown for this page since the data will be incomplete
-            if (xhr.status === 0) { 
+            if (xhr.status === 0) {
                 // And, right before we terminate the session, we will attempt one last time to see if we can use
                 // different transport option (sendBeacon vs. XHR) to get this data to the server for analysis purposes
                 send(transitData.data, null, sequence, true);

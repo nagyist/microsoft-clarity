@@ -38,6 +38,19 @@ export function start(): void {
   dimension.log(Dimension.TabId, tab());
   dimension.log(Dimension.PageLanguage, document.documentElement.lang);
   dimension.log(Dimension.DocumentDirection, document.dir);
+
+  // TODO (samart): does it make sense to check length >= 0 ?
+  if (window['dataLayer'] && window['dataLayer'].length >= 0) {
+    dimension.log(Dimension.DataLayer, 'gtm');
+  }
+
+  if (window['adobeDataLayer'] && window['adobeDataLayer'].length >= 0) {
+    dimension.log(Dimension.DataLayer, 'adl');
+  }
+
+  if (Object.keys(window['s']).indexOf("eVar0") > -1) {
+    dimension.log(Dimension.DataLayer, 'aa');
+  }
   if (navigator) {
     dimension.log(Dimension.Language, (<any>navigator).userLanguage || navigator.language);
     metric.max(Metric.Automation, navigator.webdriver ? BooleanFlag.True : BooleanFlag.False);
@@ -68,17 +81,17 @@ export function userAgentData(): void {
   if (navigator["userAgentData"] && navigator["userAgentData"].getHighEntropyValues) {
     navigator["userAgentData"].getHighEntropyValues(
       ["model",
-      "platform",
-      "platformVersion",
-      "uaFullVersion"])
-      .then(ua => { 
-        dimension.log(Dimension.Platform, ua.platform); 
-        dimension.log(Dimension.PlatformVersion, ua.platformVersion); 
+        "platform",
+        "platformVersion",
+        "uaFullVersion"])
+      .then(ua => {
+        dimension.log(Dimension.Platform, ua.platform);
+        dimension.log(Dimension.PlatformVersion, ua.platformVersion);
         ua.brands?.forEach(brand => {
-          dimension.log(Dimension.Brand, brand.name + Constant.Tilde + brand.version); 
+          dimension.log(Dimension.Brand, brand.name + Constant.Tilde + brand.version);
         });
-        dimension.log(Dimension.Model, ua.model); 
-        metric.max(Metric.Mobile, ua.mobile ? BooleanFlag.True : BooleanFlag.False); 
+        dimension.log(Dimension.Model, ua.model);
+        metric.max(Metric.Mobile, ua.mobile ? BooleanFlag.True : BooleanFlag.False);
       });
   }
 }
@@ -142,7 +155,7 @@ function track(u: User, consent: BooleanFlag = null): void {
   consent = consent === null ? u.consent : consent;
   // Convert time precision into days to reduce number of bytes we have to write in a cookie
   // E.g. Math.ceil(1628735962643 / (24*60*60*1000)) => 18852 (days) => ejo in base36 (13 bytes => 3 bytes)
-  let end = Math.ceil((Date.now() + (Setting.Expire * Time.Day))/Time.Day);
+  let end = Math.ceil((Date.now() + (Setting.Expire * Time.Day)) / Time.Day);
   // To avoid cookie churn, write user id cookie only once every day
   if (u.expiry === null || Math.abs(end - u.expiry) >= Setting.CookieInterval || u.consent !== consent) {
     setCookie(Constant.CookieKey, [data.userId, Setting.CookieVersion, end.toString(36), consent].join(Constant.Pipe), Setting.Expire);
@@ -181,7 +194,7 @@ function num(string: string, base: number = 10): number {
 function user(): User {
   let output: User = { id: shortid(), expiry: null, consent: BooleanFlag.False };
   let cookie = getCookie(Constant.CookieKey);
-  if(cookie && cookie.length > 0) {
+  if (cookie && cookie.length > 0) {
     // Splitting and looking up first part for forward compatibility, in case we wish to store additional information in a cookie
     let parts = cookie.split(Constant.Pipe);
     // For backward compatibility introduced in v0.6.18; following code can be removed with future iterations
@@ -226,7 +239,7 @@ function getCookie(key: string): string {
 }
 
 function setCookie(key: string, value: string, time: number): void {
-  if (config.track && ((navigator && navigator.cookieEnabled) ||  supported(document, Constant.Cookie))) {
+  if (config.track && ((navigator && navigator.cookieEnabled) || supported(document, Constant.Cookie))) {
     let expiry = new Date();
     expiry.setDate(expiry.getDate() + time);
     let expires = expiry ? Constant.Expires + expiry.toUTCString() : Constant.Empty;
@@ -240,7 +253,7 @@ function setCookie(key: string, value: string, time: number): void {
           rootDomain = `.${hostname[i]}${rootDomain ? rootDomain : Constant.Empty}`;
           // We do not wish to attempt writing a cookie on the absolute last part of the domain, e.g. .com or .net.
           // So we start attempting after second-last part, e.g. .domain.com (PASS) or .co.uk (FAIL)
-          if (i < hostname.length - 1) { 
+          if (i < hostname.length - 1) {
             // Write the cookie on the current computed top level domain
             document.cookie = `${cookie}${Constant.Semicolon}${Constant.Domain}${rootDomain}`;
             // Once written, check if the cookie exists and its value matches exactly with what we intended to set

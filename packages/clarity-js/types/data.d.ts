@@ -85,7 +85,12 @@ export const enum Metric {
     CartTotal = 24,
     EventCount = 25,
     Automation = 26,
-    Mobile = 27
+    Mobile = 27,
+    // Datalayer metrics
+    // Not sure we want checkout and purchase
+    AddToCart = 28,
+    Checkout = 29,
+    Purchase = 30
 }
 
 export const enum Dimension {
@@ -114,7 +119,8 @@ export const enum Dimension {
     Platform = 22,
     PlatformVersion = 23,
     Brand = 24,
-    Model = 25
+    Model = 25,
+    DataLayer = 26
 }
 
 export const enum Check {
