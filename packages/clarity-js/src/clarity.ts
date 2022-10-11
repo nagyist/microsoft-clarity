@@ -11,6 +11,7 @@ import * as layout from "@src/layout";
 import * as performance from "@src/performance";
 export { version };
 export { consent, event, identify, set, upgrade, metadata } from "@src/data";
+export { getTextFromHash } from "@src/layout/samTest";
 
 const modules: Module[] = [diagnostic, layout, interaction, performance];
 

@@ -307,6 +307,11 @@ function updateSelector(value: NodeValue): void {
     }
 }
 
+export function getNodeFromHash(hash: string): Node {
+    let id = lookup(hash);
+    return getNode(id);
+}
+
 export function getNode(id: number): Node {
     if (id in nodes) {
         return nodes[id];

@@ -73,7 +73,7 @@ function handler(event: Event, root: Node, evt: MouseEvent): void {
     }
 }
 
-function text(element: Node): string {
+export function text(element: Node): string {
     let output = null;
     if (element) {
         // Grab text using "textContent" for most HTMLElements, however, use "value" for HTMLInputElements and "alt" for HTMLImageElement.
