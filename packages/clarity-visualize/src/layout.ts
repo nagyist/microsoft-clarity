@@ -411,15 +411,13 @@ export class LayoutHelper {
                     linkElement = linkElement ? linkElement : this.createElement(doc, node.tag) as HTMLLinkElement;
                     if (!node.attributes) { node.attributes = {}; }
                     this.setAttributes(linkElement, node);
+                    // Strip SRI: recorded hashes won't match proxied/redeployed bytes during replay. See microsoft/clarity#418.
+                    linkElement.removeAttribute("integrity");
                     if ("rel" in node.attributes) {
                         if (node.attributes["rel"] === Constant.StyleSheet) {
                             this.stylesheets.push(new Promise((resolve: () => void): void => {
                                 const proxy = useproxy ?? this.state.options.useproxy;
                                 if (proxy) {
-                                    if (linkElement.integrity) {
-                                        linkElement.removeAttribute('integrity');
-                                    }
-
                                     linkElement.href = proxy(linkElement.href, linkElement.id, Constant.StyleSheet);
                                 }
                                 linkElement.onload = linkElement.onerror = this.style.bind(this, linkElement, resolve);
